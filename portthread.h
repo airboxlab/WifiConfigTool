@@ -2,17 +2,24 @@
 #define PORTTHREAD_H
 
 #include <QThread>
+#include <QSerialPortInfo>
+#include <QStringList>
 
-class portthread : public QThread
+class PortThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit portthread(QObject *parent = 0);
-
+    explicit PortThread(QObject *parent = 0);
+protected :
+    void run();
 signals:
-
-public slots:
-
+    void updateList(QStringList);
+private :
+    int length;
+    QList<QSerialPortInfo> serialPortInfoList;
+    QStringList *ListPort;
+//public slots:
+//    void test();
 };
 
 #endif // PORTTHREAD_H
