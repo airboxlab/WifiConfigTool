@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         if (serialPortInfo.portName()!="Bluetooth-Incoming-Port" && serialPortInfo.portName()!="Bluetooth-Modem")
         {
-        ui->portConnectedChoice->addItem(*(new QString(serialPortInfo.portName())));
+            ui->portConnectedChoice->addItem(*(new QString(serialPortInfo.portName())));
         }
     }
 
@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(test(QString,QByteArray,QByteArray,QByteArray)));
     connect(t2,SIGNAL(write(int)),this,SLOT(write(int)));
     connect(t1,SIGNAL(updateList(QStringList)),this,SLOT(UpdateList(QStringList)));
+    connect(this,SIGNAL(SaveConf(bool)),t2,SLOT(writeConf(bool)));
 }
 
 void MainWindow::write(int a)
@@ -36,21 +37,64 @@ void MainWindow::write(int a)
     QString m;
     switch(a)
     {
-        case 0:
-            m="In config Mode";
-            break;
-        case 1:
-            m="Sending configuration to Alima";
-            break;
-        case 2:
-            m="Connected";
-            break;
-        case 3:
-            m="Error connection";
-            break;
-        case 4:
-            m="Configuration saved";
-            break;
+    case 0:
+        m="In config Mode";
+        break;
+    case 1:
+        m="Sending configuration to Alima";
+        break;
+    case 2:
+        m="Connected";
+        break;
+    case 3:
+        m="Error connection";
+        break;
+    case 4:
+        m="Configuration saved";
+        break;
+    case 5:
+        m="Ok";
+        break;
+    case 6:
+        m="Error";
+        break;
+    case 7:
+    {
+        m="";
+        int ret=QMessageBox::information(this, "Configuration saved","Configuration saved successfully");
+        if( ret == QMessageBox::Ok ) qApp->quit();
+        break;
+    }
+
+    case 10:
+        {
+        m="";
+
+        int reponse = QMessageBox::warning(this, "Could not connect", "COULD NOT CONNECT :Do you want to save the configuration anyway?",QMessageBox::Yes|QMessageBox::No);
+        if (reponse==QMessageBox::Yes)
+        {
+            emit SaveConf(true);
+        }
+        else emit SaveConf(false);
+    }
+        break;
+    case 20:
+        m="Entering in config mode";
+        break;
+    case 21:
+        m="Starting new configuration";
+        break;
+    case 22:
+        m="Waiting for information validation";
+        break;
+    case 23:
+        m="Saving configuration";
+        break;
+    default:
+        m="No message saved";
+        break;
+        //}
+
     }
     ui->statusBar->showMessage(m);
 
@@ -108,25 +152,25 @@ bool MainWindow::checkData()
     if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
     {
         QMessageBox::warning(
-            this,
-            tr("Application Name"),
-            tr("No SSID & No password") );
+                    this,
+                    tr("Application Name"),
+                    tr("No SSID & No password") );
         return false;
     }
     else if ((!ui->None->isChecked()) && ui->pwd->text()==NULL)
     {
         QMessageBox::warning(
-            this,
-            tr("Application Name"),
-            tr("Empty password") );
+                    this,
+                    tr("Application Name"),
+                    tr("Empty password") );
         return false;
     }
     else if (ui->ssid->text()==NULL)
     {
         QMessageBox::warning(
-            this,
-            tr("Application Name"),
-            tr("No SSID") );
+                    this,
+                    tr("Application Name"),
+                    tr("No SSID") );
         return false;
     }
     else return true;
@@ -134,7 +178,7 @@ bool MainWindow::checkData()
 
 void MainWindow::displayError(const char val)
 {
-   QString str;
+    QString str;
     switch (val)
     {
     case '0':
@@ -190,13 +234,13 @@ void MainWindow::sendConfig()
     }
     if (checkData())
     {
-    //TryConnect();
-     QString ssid=ui->ssid->text();
-     QString pwd=ui->pwd->text();
-     QByteArray SSID=ssid.toUtf8();
-     QByteArray PWD=pwd.toUtf8();
-     QByteArray ENCRYPTION=getIndex().toUtf8();
-     emit SendMessage(ui->portConnectedChoice->currentText(),SSID,PWD,ENCRYPTION);
+        //TryConnect();
+        QString ssid=ui->ssid->text();
+        QString pwd=ui->pwd->text();
+        QByteArray SSID=ssid.toUtf8();
+        QByteArray PWD=pwd.toUtf8();
+        QByteArray ENCRYPTION=getIndex().toUtf8();
+        emit SendMessage(ui->portConnectedChoice->currentText(),SSID,PWD,ENCRYPTION);
     }
 }
 

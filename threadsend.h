@@ -28,6 +28,7 @@ private:
 
 public slots:
     void test(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
+    void writeConf(bool b);
 };
 
 #endif // TESTTHREADSEND_H

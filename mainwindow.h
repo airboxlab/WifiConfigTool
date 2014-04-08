@@ -44,6 +44,7 @@ private:
 
 signals:
     void SendMessage(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
+    void SaveConf(bool b);
 
 public slots:
     //Update List of COM Port
