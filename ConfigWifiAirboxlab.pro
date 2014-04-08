@@ -21,9 +21,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    portthread.cpp
+    portthread.cpp \
+    threadsend.cpp
 
 HEADERS  += mainwindow.h \
-    portthread.h
+    portthread.h \
+    threadsend.h
 
 FORMS    += mainwindow.ui

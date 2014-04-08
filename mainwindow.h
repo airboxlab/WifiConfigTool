@@ -10,6 +10,7 @@
 #include <QSerialPort>
 #include <QMessageBox>
 #include "portthread.h"
+#include "threadsend.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,10 +25,10 @@ public:
     QByteArray wait_for_response(int msec);
     void displayError(const char a);
     void closeSerialPort();
-    int getIndex();
+    QString getIndex();
     //Check the data before sending it
     bool checkData();
-    PortThread *t1;
+
 
     ~MainWindow();
 
@@ -38,6 +39,11 @@ private:
     QTimer m_timer;
     QByteArray  m_readData;
     QSerialPort *serial;
+    PortThread *t1;
+    ThreadSend *t2;
+
+signals:
+    void SendMessage(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
 
 public slots:
     //Update List of COM Port
@@ -52,9 +58,9 @@ public slots:
     //Send all the connection info
     void sendConfig();
     //Connect to the device via serial
-    void TryConnect();
+    //void TryConnect();
     void noEncryption(bool b);
-    void Write();
+    void write(int a);
     void UpdateList(QStringList q);
 };
 

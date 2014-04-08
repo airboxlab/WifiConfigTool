@@ -21,31 +21,40 @@ MainWindow::MainWindow(QWidget *parent) :
 
     t1=new PortThread();
     t1->start();
-    //Disable all the line edit
-    //ui->ssid->setEnabled(false);
-    //ui->pwd->setEnabled(false);
-    //ui->encryption->setEnabled(false);
-    //Inform the user what to do
+    t2=new ThreadSend();
+    t2->start();
     statusBar()->showMessage("To begin, select the COM Port");
-    //About the info on the GUI
-    //connect(ui->portConnectedChoice,SIGNAL(currentIndexChanged(int)),this,SLOT(ChangeStatusBar()));
-    //connect(ui->portConnectedChoice,SIGNAL())
-    //connect(ui->portConnectedChoice,SIGNAL(),this,SLOT(UnlockWifiParameter()));
     connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
-    //connect(ui->update,SIGNAL(clicked()),this,SLOT(checkData()));
-    //About the serial communication
-    //connect(ui->update,SIGNAL(clicked()),this,SLOT(TryConnect()));
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
-    //connect(ui->update,SIGNAL(clicked()),t2,SLOT(test()));
-    //connect(t2,SIGNAL(finished()),this,SLOT(Write()));
+    connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(test(QString,QByteArray,QByteArray,QByteArray)));
+    connect(t2,SIGNAL(write(int)),this,SLOT(write(int)));
     connect(t1,SIGNAL(updateList(QStringList)),this,SLOT(UpdateList(QStringList)));
 }
 
-void MainWindow::Write()
+void MainWindow::write(int a)
 {
-    ui->statusBar->showMessage("from thread");
-}
+    QString m;
+    switch(a)
+    {
+        case 0:
+            m="In config Mode";
+            break;
+        case 1:
+            m="Sending configuration to Alima";
+            break;
+        case 2:
+            m="Connected";
+            break;
+        case 3:
+            m="Error connection";
+            break;
+        case 4:
+            m="Configuration saved";
+            break;
+    }
+    ui->statusBar->showMessage(m);
 
+}
 void MainWindow::UpdateList(QStringList q)
 {
     ui->portConnectedChoice->clear();
@@ -172,103 +181,22 @@ void MainWindow::displayError(const char val)
 
 }
 
-void MainWindow::TryConnect()
-{
-    serial->setPortName(ui->portConnectedChoice->currentText());
-    //if there is no open serial communication
-    if(serial->isOpen())
-    {
-        closeSerialPort();
-    }
-
-        if (serial->open(QIODevice::ReadWrite)) {
-            if (serial->setBaudRate(BAUDRATE))
-            {
-                ui->statusBar->showMessage(tr("Connected to"));
-
-            }
-            } else {
-                serial->close();
-                QMessageBox::critical(this, tr("Error"), serial->errorString());
-
-                ui->statusBar->showMessage(tr("Open error"));
-            }
-
-}
-
-
 void MainWindow::sendConfig()
 {
     //MainWindow::closeSerialPort();
+    if (t2->isFinished())
+    {
+        t2->start();
+    }
     if (checkData())
     {
-             TryConnect();
-            QMessageBox::information(this,"connected","connected");
-            QString ssid=ui->ssid->text();
-            QString pwd=ui->pwd->text();
-            QString encrypt=QString::number(getIndex());
-            QByteArray SSID=ssid.toUtf8();
-            QByteArray PWD=pwd.toUtf8();
-            //QByteArray ENCRYPT=encrypt.toUtf8();
-            //ui->statusBar->showMessage(SSID);
-            //ui->statusBar->showMessage("Starting config mode");
-            serial->write("w");
-
-            m_readData=wait_for_response(5000);
-            displayError(m_readData[0]);
-            //ui->statusBar->showMessage(m_readData);
-            serial->write(SSID);
-            serial->write("\r");
-            serial->write(PWD);
-            serial->write("\r");
-
-            if (ui->None->isChecked())
-            {
-                serial->write("0");
-            }
-            else if (ui->WEP->isChecked())
-            {
-                serial->write("1");
-            }
-            else if (ui->WPA->isChecked())
-            {
-                serial->write("2");
-            }
-            else if (ui->WPA2->isChecked())
-            {
-                serial->write("3");
-            }
-            m_readData=wait_for_response(5000);
-            ui->statusBar->showMessage("Sending conf");
-            m_readData=wait_for_response(120000);
-            displayError(m_readData[0]);
-            if (m_readData[0]=='0')
-            {
-                ui->statusBar->showMessage("Ok ... Saving config");
-                m_readData = wait_for_response(10000);
-                if (m_readData[0] == '0')
-                {
-                    ui->statusBar->showMessage("Conf saved");
-                }
-            }
-            else if (m_readData[0]=='4' || m_readData[0]=='b' || m_readData[0]=='8' || m_readData[0]=='9'|| m_readData[0]=='a')
-            {
-                int reponse = QMessageBox::warning(this, "Could not connect", "COULD NOT CONNECT :Do you want to save the configuration anyway?",QMessageBox::Yes|QMessageBox::No);
-                if (reponse==QMessageBox::Yes)
-                {
-                    serial->write("s");
-                }
-                else serial->write("n");
-                m_readData=wait_for_response(5000);
-                if (m_readData[0]=='0')
-                {
-                    ui->statusBar->showMessage("No error");
-                }
-                else ui->statusBar->showMessage("Error");
-
-
-            }
-            closeSerialPort();
+    //TryConnect();
+     QString ssid=ui->ssid->text();
+     QString pwd=ui->pwd->text();
+     QByteArray SSID=ssid.toUtf8();
+     QByteArray PWD=pwd.toUtf8();
+     QByteArray ENCRYPTION=getIndex().toUtf8();
+     emit SendMessage(ui->portConnectedChoice->currentText(),SSID,PWD,ENCRYPTION);
     }
 }
 
@@ -290,24 +218,24 @@ QByteArray MainWindow::wait_for_response(int msec)
 
 }
 
-int MainWindow::getIndex()
+QString MainWindow::getIndex()
 {
-    int i=0;
+    QString i="0";
     if (ui->None->isChecked())
     {
-        i=0;
+        i="0";
     }
     else if (ui->WEP->isChecked())
     {
-        i=1;
+        i="1";
     }
     else if (ui->WPA->isChecked())
     {
-        i=2;
+        i="2";
     }
     else if (ui->WPA2->isChecked())
     {
-        i=3;
+        i="3";
     }
     return i;
 }
