@@ -15,13 +15,15 @@ MainWindow::MainWindow(QWidget *parent) :
     t1->start();
     t2=new ThreadSend();
     t2->start();
+    sending=false;
     statusBar()->showMessage("To begin, select the COM Port");
     connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
     connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(test(QString,QByteArray,QByteArray,QByteArray)));
     connect(t2,SIGNAL(write(int)),this,SLOT(write(int)));
-    connect(t1,SIGNAL(updateList(QStringList)),this,SLOT(UpdateList(QStringList)));
+    connect(t1,SIGNAL(updateName(QString)),this,SLOT(UpdateList(QString)));
     connect(this,SIGNAL(SaveConf(bool)),t2,SLOT(writeConf(bool)));
+    connect(t1,SIGNAL(isPlugged(bool)),this,SLOT(connectedAirbox(bool)));
 }
 
 void MainWindow::write(int a)
@@ -60,18 +62,24 @@ void MainWindow::write(int a)
     {
         m="";
         int reponse = QMessageBox::warning(this, "Could not connect", "Can't connect to the device, please try again");
+        sending=false;
+        lockui(false);
         break;
     }
     case 11:
     {
         m="";
         int reponse = QMessageBox::warning(this, "Configuration mode", "Error while entering configuration mode, please try again");
+        sending=false;
+        lockui(false);
         break;
     }
     case 12:
     {
         m="";
         int reponse = QMessageBox::warning(this, "Configuration mode", "Error while sending configuration, please try again");
+        sending=false;
+        lockui(false);
         break;
     }
     case 13:
@@ -89,6 +97,8 @@ void MainWindow::write(int a)
     {
         m="";
         int ret=QMessageBox::information(this, "Configuration not saved","Could not confirm information, no saving, please try again");
+        sending=false;
+        lockui(false);
         //if( ret == QMessageBox::Ok ) qApp->quit();
         break;
     }
@@ -96,6 +106,8 @@ void MainWindow::write(int a)
     {
         m="";
         int ret=QMessageBox::information(this, "Can't save","Error while saving, please try again");
+        sending=false;
+        lockui(false);
         //if( ret == QMessageBox::Ok ) qApp->quit();
         break;
     }
@@ -103,6 +115,8 @@ void MainWindow::write(int a)
     {
         m="";
         int ret=QMessageBox::information(this, "Configuration not saved","Error while writing no saving");
+        sending=false;
+        lockui(false);
         //if( ret == QMessageBox::Ok ) qApp->quit();
         break;
     }
@@ -116,10 +130,9 @@ void MainWindow::write(int a)
     ui->statusBar->showMessage(m);
 
 }
-void MainWindow::UpdateList(QStringList q)
+void MainWindow::UpdateList(QString q)
 {
-    ui->portConnectedChoice->clear();
-    ui->portConnectedChoice->addItems(q);
+    portConnectedName=q;
 }
 
 void MainWindow::noEncryption(bool b)
@@ -133,13 +146,26 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-
-void MainWindow::ClearView()
+void MainWindow::connectedAirbox(bool b)
 {
-    ui->portConnectedChoice->clear();
-    ui->portConnectedChoice->update();
+    if (!sending)
+    {
+        bool enabled=false;
+        if (b)
+        {
+            ui->statusBar->showMessage("Airboxlab detected");
+            enabled=false;
+        }
+        else
+        {
+            ui->statusBar->showMessage("Airboxlab not detected : Please plug it to the computer");
+            enabled=true;
+        }
+        lockui(enabled);
+    }
 }
+
+
 
 void MainWindow::ChangeStatusBar()
 {
@@ -151,7 +177,14 @@ void MainWindow::UnlockWifiParameter()
     ui->ssid->setEnabled(true);
     ui->pwd->setEnabled(true);
     ui->encryption->setEnabled(true);
+}
 
+void MainWindow::lockui(bool b)
+{
+    ui->encryption->setDisabled(b);
+    ui->ssid->setDisabled(b);
+    ui->pwd->setDisabled(b);
+    ui->update->setDisabled(b);
 }
 
 bool MainWindow::checkData()
@@ -234,7 +267,8 @@ void MainWindow::displayError(const char val)
 
 void MainWindow::sendConfig()
 {
-    //MainWindow::closeSerialPort();
+    sending=true;
+    lockui(true);
     if (t2->isFinished())
     {
         t2->start();
@@ -247,7 +281,7 @@ void MainWindow::sendConfig()
         QByteArray SSID=ssid.toUtf8();
         QByteArray PWD=pwd.toUtf8();
         QByteArray ENCRYPTION=getIndex().toUtf8();
-        emit SendMessage(ui->portConnectedChoice->currentText(),SSID,PWD,ENCRYPTION);
+        emit SendMessage(portConnectedName,SSID,PWD,ENCRYPTION);
     }
 }
 

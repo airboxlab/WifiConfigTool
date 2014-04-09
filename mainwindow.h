@@ -28,6 +28,7 @@ public:
     QString getIndex();
     //Check the data before sending it
     bool checkData();
+    void lockui(bool);
 
 
     ~MainWindow();
@@ -41,15 +42,16 @@ private:
     QSerialPort *serial;
     PortThread *t1;
     ThreadSend *t2;
+    QString portConnectedName;
+    bool sending;
 
 signals:
     void SendMessage(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
     void SaveConf(bool b);
     void CloseConnection();
+    void stopThreadPort(bool b);
 
 public slots:
-    //Empty the combobox and the list
-    void ClearView();
     //Give status on the statusbar
     void ChangeStatusBar();
     //Control which widget is enabled
@@ -61,7 +63,8 @@ public slots:
     //void TryConnect();
     void noEncryption(bool b);
     void write(int a);
-    void UpdateList(QStringList q);
+    void UpdateList(QString q);
+    void connectedAirbox(bool);
 };
 
 #endif // MAINWINDOW_H

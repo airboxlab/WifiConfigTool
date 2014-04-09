@@ -13,9 +13,13 @@ public:
 protected :
     void run();
 signals:
-    void updateList(QStringList);
+    void updateName(QString);
+    void isPlugged(bool);
+public slots:
+    void ProcessingConf(bool);
 private :
     int length;
+    bool runable;
     QList<QSerialPortInfo> serialPortInfoList;
     QStringList *ListPort;
     //public slots:
