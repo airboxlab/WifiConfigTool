@@ -35,7 +35,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Port COM</string>
+          <string>Device</string>
          </property>
         </widget>
        </item>
@@ -51,12 +51,16 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>SSID</string>
+            <string>SSID (Wifi name)</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="ssid"/>
+          <widget class="QLineEdit" name="ssid">
+           <property name="maxLength">
+            <number>31</number>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_3">
@@ -66,7 +70,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="pwd"/>
+          <widget class="QLineEdit" name="pwd">
+           <property name="maxLength">
+            <number>31</number>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="update">

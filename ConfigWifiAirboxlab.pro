@@ -8,7 +8,7 @@ CONFIG +=c++11
 QT = core
 QT +=widgets
 
-
+ICON = iconwifi.icns
 greaterThan(QT_MAJOR_VERSION, 4) {
     QT       += serialport
 } else {

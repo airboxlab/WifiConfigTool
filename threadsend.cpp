@@ -19,20 +19,16 @@ void ThreadSend::test(QString portName,QByteArray ssid,QByteArray pwd, QByteArra
 {
     ThreadSend::TryConnect(portName);
     QByteArray  m_readData;
-    emit write(20);
     serial->write("w");
     m_readData=ThreadSend::wait_for_response(15000);
     if (m_readData[0]!='0')
     {
-        exit();
+        emit write(11);
+        CloseConnec();
     }
     else
     {
-        emit write(0);
-
-        //displayError(m_readData[0]);
-        //ui->statusBar->showMessage(m_readData);
-        emit write (21);
+        emit write(3);
         serial->write(ssid);
         serial->write("\r");
         serial->write(pwd);
@@ -42,28 +38,30 @@ void ThreadSend::test(QString portName,QByteArray ssid,QByteArray pwd, QByteArra
         m_readData=wait_for_response(5000);
         if (m_readData[0]!='0')
         {
-            emit write(6);
-            exit();
+            emit write(12);
+            CloseConnec();
         }
         else
         {
-            emit write(5);
-            emit write(22);
+            emit write(4);
             m_readData=wait_for_response(120000);
             if (m_readData[0]!='0')
             {
-                emit write(6);
-                exit();
+                emit write(13);
             }
             else
             {
                 emit write(5);
-                //Saving config
-                emit write(23);
                 m_readData = wait_for_response(10000);
-                if (m_readData[0] == '0')
+                if (m_readData[0] != '0')
                 {
-                    emit write(7);
+                    emit write(15);
+                    CloseConnec();
+                }
+                else
+                {
+                    emit write(6);
+                    CloseConnec();
                 }
                 /*
                 else if (m_readData[0]=='4' || m_readData[0]=='b' || m_readData[0]=='8' || m_readData[0]=='9'|| m_readData[0]=='a')
@@ -82,7 +80,7 @@ void ThreadSend::test(QString portName,QByteArray ssid,QByteArray pwd, QByteArra
         }
     }
 
-    closeSerialPort();
+    // closeSerialPort();
 
 }
 
@@ -92,14 +90,35 @@ void ThreadSend::writeConf(bool b)
     if (b)
     {
         serial->write("s");
-    }
-    else serial->write("n");
-    m_readData=wait_for_response(5000);
-    if (m_readData[0]=='0')
-    {
+        m_readData=wait_for_response(5000);
         emit write(5);
+        m_readData = wait_for_response(10000);
+        if (m_readData[0] != '0')
+        {
+            emit write(15);
+            CloseConnec();
+        }
+        else
+        {
+            emit write(6);
+            CloseConnec();
+        }
     }
-    else write(6);
+    else
+    {
+        serial->write("n");
+        m_readData=wait_for_response(5000);
+        if (m_readData[0]=='0')
+        {
+            emit write(14);
+            //CloseConnec();
+        }
+        else
+        {
+            CloseConnec();
+            emit write(16);
+        }
+    }
 }
 
 void ThreadSend::closeSerialPort()
@@ -132,7 +151,7 @@ void ThreadSend::TryConnect(QString str)
     {
         closeSerialPort();
     }
-
+    emit write(1);
     if (serial->open(QIODevice::ReadWrite)) {
         if (serial->setBaudRate(BAUDRATE))
         {
@@ -140,8 +159,13 @@ void ThreadSend::TryConnect(QString str)
 
         }
     } else {
-        serial->close();
-        emit write(3);
+        emit write(10);
     }
 
+}
+
+void ThreadSend::CloseConnec()
+{
+    closeSerialPort();
+    exit();
 }

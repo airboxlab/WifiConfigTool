@@ -7,18 +7,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 
 {
-    serialPortInfoList = QSerialPortInfo::availablePorts();
+    /*
     serial=new QSerialPort();
+    */
     ui->setupUi(this);
-    //Initialize the list of COM port
-    foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
-    {
-        if (serialPortInfo.portName()!="Bluetooth-Incoming-Port" && serialPortInfo.portName()!="Bluetooth-Modem")
-        {
-            ui->portConnectedChoice->addItem(*(new QString(serialPortInfo.portName())));
-        }
-    }
-
     t1=new PortThread();
     t1->start();
     t2=new ThreadSend();
@@ -34,68 +26,93 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::write(int a)
 {
+    //If error (a>=10), close connection, thread)
+    if (a>=10 && a!=13)
+    {
+        emit CloseConnection();
+    }
     QString m;
     switch(a)
     {
-    case 0:
-        m="In config Mode";
-        break;
     case 1:
-        m="Sending configuration to Alima";
+        m="Connecting to serial";
         break;
     case 2:
-        m="Connected";
+        m="Entering configuration mode";
         break;
     case 3:
-        m="Error connection";
+        m="Sending new configuration";
         break;
     case 4:
-        m="Configuration saved";
+        m="Waiting for information";
         break;
     case 5:
-        m="Ok";
+        m="Saving";
         break;
     case 6:
-        m="Error";
-        break;
-    case 7:
     {
         m="";
         int ret=QMessageBox::information(this, "Configuration saved","Configuration saved successfully");
         if( ret == QMessageBox::Ok ) qApp->quit();
         break;
     }
-
     case 10:
-        {
+    {
         m="";
-
+        int reponse = QMessageBox::warning(this, "Could not connect", "Can't connect to the device, please try again");
+        break;
+    }
+    case 11:
+    {
+        m="";
+        int reponse = QMessageBox::warning(this, "Configuration mode", "Error while entering configuration mode, please try again");
+        break;
+    }
+    case 12:
+    {
+        m="";
+        int reponse = QMessageBox::warning(this, "Configuration mode", "Error while sending configuration, please try again");
+        break;
+    }
+    case 13:
+    {
+        m="";
         int reponse = QMessageBox::warning(this, "Could not connect", "COULD NOT CONNECT :Do you want to save the configuration anyway?",QMessageBox::Yes|QMessageBox::No);
         if (reponse==QMessageBox::Yes)
         {
             emit SaveConf(true);
         }
         else emit SaveConf(false);
+        break;
     }
+    case 14:
+    {
+        m="";
+        int ret=QMessageBox::information(this, "Configuration not saved","Could not confirm information, no saving, please try again");
+        //if( ret == QMessageBox::Ok ) qApp->quit();
         break;
-    case 20:
-        m="Entering in config mode";
+    }
+    case 15:
+    {
+        m="";
+        int ret=QMessageBox::information(this, "Can't save","Error while saving, please try again");
+        //if( ret == QMessageBox::Ok ) qApp->quit();
         break;
-    case 21:
-        m="Starting new configuration";
+    }
+    case 16:
+    {
+        m="";
+        int ret=QMessageBox::information(this, "Configuration not saved","Error while writing no saving");
+        //if( ret == QMessageBox::Ok ) qApp->quit();
         break;
-    case 22:
-        m="Waiting for information validation";
-        break;
-    case 23:
-        m="Saving configuration";
-        break;
+    }
     default:
         m="No message saved";
         break;
         //}
 
     }
+
     ui->statusBar->showMessage(m);
 
 }
@@ -116,17 +133,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-//Not used yet
-void MainWindow::UpdatePort()
-{
-    serialPortInfoList = QSerialPortInfo::availablePorts();
-    ClearView();
-    foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
-    {
-        ui->portConnectedChoice->addItem(*(new QString(serialPortInfo.portName())));
-    }
 
-}
 
 void MainWindow::ClearView()
 {
@@ -244,6 +251,7 @@ void MainWindow::sendConfig()
     }
 }
 
+/*
 QByteArray MainWindow::wait_for_response(int msec)
 {
     bool b=true;
@@ -261,6 +269,7 @@ QByteArray MainWindow::wait_for_response(int msec)
     return serial->readAll();
 
 }
+*/
 
 QString MainWindow::getIndex()
 {
@@ -284,8 +293,10 @@ QString MainWindow::getIndex()
     return i;
 }
 
+/*
 void MainWindow::closeSerialPort()
 {
     serial->close();
     //ui->statusBar->showMessage(tr("Disconnected"));
 }
+*/

@@ -22,9 +22,9 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    QByteArray wait_for_response(int msec);
+    //QByteArray wait_for_response(int msec);
     void displayError(const char a);
-    void closeSerialPort();
+    //void closeSerialPort();
     QString getIndex();
     //Check the data before sending it
     bool checkData();
@@ -45,10 +45,9 @@ private:
 signals:
     void SendMessage(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
     void SaveConf(bool b);
+    void CloseConnection();
 
 public slots:
-    //Update List of COM Port
-    void UpdatePort();
     //Empty the combobox and the list
     void ClearView();
     //Give status on the statusbar

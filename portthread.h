@@ -18,8 +18,8 @@ private :
     int length;
     QList<QSerialPortInfo> serialPortInfoList;
     QStringList *ListPort;
-//public slots:
-//    void test();
+    //public slots:
+    //    void test();
 };
 
 #endif // PORTTHREAD_H

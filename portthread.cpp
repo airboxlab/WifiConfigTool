@@ -14,23 +14,27 @@ PortThread::PortThread(QObject *parent) :
 
 void PortThread::run()
 {
+    int i=0;
     while (true)
     {
-    QThread::msleep(500);
-    serialPortInfoList=QSerialPortInfo::availablePorts();
-    if (length!=serialPortInfoList.length())
-    {
-        foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
+        QThread::msleep(500);
+        serialPortInfoList=QSerialPortInfo::availablePorts();
+        if (length!=serialPortInfoList.length() || i==0)
         {
-            if (serialPortInfo.portName()!="Bluetooth-Incoming-Port" && serialPortInfo.portName()!="Bluetooth-Modem")
+            foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
             {
-            ListPort->append(*(new QString(serialPortInfo.portName())));
+
+                if (serialPortInfo.portName()!="Bluetooth-Incoming-Port" && serialPortInfo.portName()!="Bluetooth-Modem")
+                {
+
+                    ListPort->append(*(new QString(serialPortInfo.portName())));
+                }
             }
+            length=serialPortInfoList.length();
+            emit updateList(*ListPort);
+            ListPort->clear();
         }
-        length=serialPortInfoList.length();
-        emit updateList(*ListPort);
-        ListPort->clear();
-    }
+        i=1;
     }
     exec();
 }
