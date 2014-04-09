@@ -29,7 +29,7 @@ void PortThread::run()
             //{
             foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
             {
-                if (serialPortInfo.manufacturer()=="www.airboxlab.com" || serialPortInfo.manufacturer()=="getalima.com")
+                if (serialPortInfo.manufacturer()=="www.airboxlab.com" || serialPortInfo.manufacturer()=="getalima.com" || serialPortInfo.manufacturer()=="http://getalima.com/" || serialPortInfo.manufacturer()=="http://www.airboxlab.com/" )
                 {
                     b=true;
                     name=*(new QString(serialPortInfo.portName()));

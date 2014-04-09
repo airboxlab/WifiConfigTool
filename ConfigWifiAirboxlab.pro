@@ -17,8 +17,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 
 TARGET = ConfigWifiAirboxlab
 TEMPLATE = app
-
-
+DEPLOYMENT.display_name=Airboxlab WiFi Configurator
 SOURCES += main.cpp\
         mainwindow.cpp \
     portthread.cpp \

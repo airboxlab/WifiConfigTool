@@ -183,7 +183,11 @@ void MainWindow::lockui(bool b)
 {
     ui->encryption->setDisabled(b);
     ui->ssid->setDisabled(b);
-    ui->pwd->setDisabled(b);
+    if (ui->None->isChecked())
+    {
+        ui->pwd->setDisabled(true);
+    }
+    else  ui->pwd->setDisabled(b);
     ui->update->setDisabled(b);
 }
 
