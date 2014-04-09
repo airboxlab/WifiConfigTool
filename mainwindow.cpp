@@ -85,7 +85,7 @@ void MainWindow::write(int a)
     case 13:
     {
         m="";
-        int reponse = QMessageBox::warning(this, "Could not connect", "COULD NOT CONNECT :Do you want to save the configuration anyway?",QMessageBox::Yes|QMessageBox::No);
+        int reponse = QMessageBox::warning(this, "Could not connect", "AIRBOXLAB COULD NOT CONNECT TO THE WIRELESS SIGNAL(Time out in 60 sec) Do you want WiFi credentials to be saved in Airboxlab anyway?",QMessageBox::Yes|QMessageBox::No);
         if (reponse==QMessageBox::Yes)
         {
             emit SaveConf(true);

@@ -6,21 +6,33 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>438</width>
-    <height>180</height>
+    <width>421</width>
+    <height>176</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>421</width>
+    <height>176</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>421</width>
+    <height>176</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Airboxlab WiFi Config</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>10</y>
+      <x>10</x>
+      <y>0</y>
       <width>401</width>
-      <height>141</height>
+      <height>155</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -31,7 +43,7 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>SSID (Wifi name)</string>
+            <string>SSID: WiFi signal name (31 char max)</string>
            </property>
           </widget>
          </item>
@@ -45,7 +57,7 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Password</string>
+            <string>WiFi password (31 char max)</string>
            </property>
           </widget>
          </item>
@@ -59,7 +71,7 @@
          <item>
           <widget class="QPushButton" name="update">
            <property name="text">
-            <string>update</string>
+            <string>Save in Airboxlab</string>
            </property>
           </widget>
          </item>
@@ -69,12 +81,12 @@
         <widget class="QGroupBox" name="encryption">
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>90</width>
            <height>130</height>
           </size>
          </property>
          <property name="title">
-          <string>Encryption</string>
+          <string>WiFi Encryption</string>
          </property>
          <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
