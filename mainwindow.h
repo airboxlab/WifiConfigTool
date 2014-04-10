@@ -26,7 +26,7 @@ public:
     //QByteArray wait_for_response(int msec);
     void displayError(const char a);
     //void closeSerialPort();
-    QString getIndex();
+    QString getIndex(int nssid);
     //Check the data before sending it
     bool checkData();
     void lockui(bool);
