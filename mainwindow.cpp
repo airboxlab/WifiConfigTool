@@ -272,13 +272,14 @@ void MainWindow::displayError(const char val)
 void MainWindow::sendConfig()
 {
     sending=true;
-    lockui(true);
+
     if (t2->isFinished())
     {
         t2->start();
     }
     if (checkData())
     {
+        lockui(true);
         //TryConnect();
         QString ssid=ui->ssid->text();
         QString pwd=ui->pwd->text();
