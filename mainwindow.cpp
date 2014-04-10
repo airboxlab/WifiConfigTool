@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     t1->start();
     t2=new ThreadSend();
     t2->start();
+    t3=new WifiThread();
+    t3->start();
     sending=false;
     statusBar()->showMessage("To begin, select the COM Port");
     connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
@@ -24,6 +26,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(t1,SIGNAL(updateName(QString)),this,SLOT(UpdateList(QString)));
     connect(this,SIGNAL(SaveConf(bool)),t2,SLOT(writeConf(bool)));
     connect(t1,SIGNAL(isPlugged(bool)),this,SLOT(connectedAirbox(bool)));
+    connect(t3,SIGNAL(updateList(QStringList*,QStringList*)),this,SLOT(updateSSIDList(QStringList*,QStringList*)));
+}
+void MainWindow::updateSSIDList(QStringList *ssid,QStringList *encryption)
+{
+    ui->comboBox->addItems(*ssid);
 }
 
 void MainWindow::write(int a)

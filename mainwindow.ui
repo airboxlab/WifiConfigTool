@@ -55,6 +55,9 @@
           </widget>
          </item>
          <item>
+          <widget class="QComboBox" name="comboBox"/>
+         </item>
+         <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>WiFi password (31 char max)</string>

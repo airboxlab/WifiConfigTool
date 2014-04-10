@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include "portthread.h"
 #include "threadsend.h"
+#include "wifithread.h"
 
 namespace Ui {
 class MainWindow;
@@ -42,6 +43,7 @@ private:
     QSerialPort *serial;
     PortThread *t1;
     ThreadSend *t2;
+    WifiThread *t3;
     QString portConnectedName;
     bool sending;
 
@@ -65,6 +67,7 @@ public slots:
     void write(int a);
     void UpdateList(QString q);
     void connectedAirbox(bool);
+    void updateSSIDList(QStringList *ssid,QStringList *encryption);
 };
 
 #endif // MAINWINDOW_H
