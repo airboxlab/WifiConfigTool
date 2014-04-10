@@ -44,6 +44,7 @@ private:
     PortThread *t1;
     ThreadSend *t2;
     WifiThread *t3;
+    QStringList *encryptlist;
     QString portConnectedName;
     bool sending;
 

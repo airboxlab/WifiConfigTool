@@ -19,7 +19,7 @@ void WifiThread::run()
     int sizeList=0;
     while (true)
     {
-        temp=ListWifi->length();
+        sizeList=ListWifi->length();
         ListWifi=new QStringList();
         ListEncryption= new QStringList();
         #if defined(Q_OS_WIN)
@@ -66,8 +66,9 @@ void WifiThread::run()
         {
             emit updateList(ListWifi,ListEncryption);
         }
-        exec();
+
         QThread::msleep(1000);
     }
+    exec();
 
 }

@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     t3=new WifiThread();
     t3->start();
     sending=false;
+    encryptlist=new QStringList();
     statusBar()->showMessage("To begin, select the COM Port");
     connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
@@ -30,7 +31,15 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 void MainWindow::updateSSIDList(QStringList *ssid,QStringList *encryption)
 {
+    encryptlist=encryption;
+    QString temp=ui->comboBox->currentText();
+    ui->comboBox->clear();
+
     ui->comboBox->addItems(*ssid);
+    if (ssid->contains(temp))
+    {
+     ui->comboBox->setCurrentText(temp);
+    }
 }
 
 void MainWindow::write(int a)
@@ -190,6 +199,7 @@ void MainWindow::lockui(bool b)
 {
     ui->encryption->setDisabled(b);
     ui->ssid->setDisabled(b);
+    ui->comboBox->setDisabled(b);
     if (ui->None->isChecked())
     {
         ui->pwd->setDisabled(true);
@@ -200,7 +210,7 @@ void MainWindow::lockui(bool b)
 
 bool MainWindow::checkData()
 {
-    if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
+   /* if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
     {
         QMessageBox::warning(
                     this,
@@ -224,7 +234,7 @@ bool MainWindow::checkData()
                     tr("No SSID") );
         return false;
     }
-    else return true;
+    else */ return true;
 }
 
 void MainWindow::displayError(const char val)
@@ -279,7 +289,7 @@ void MainWindow::displayError(const char val)
 void MainWindow::sendConfig()
 {
     sending=true;
-    lockui(true);
+
     if (t2->isFinished())
     {
         t2->start();
@@ -287,11 +297,13 @@ void MainWindow::sendConfig()
     if (checkData())
     {
         //TryConnect();
-        QString ssid=ui->ssid->text();
+        lockui(true);
+        QString ssid=ui->comboBox->currentText();
         QString pwd=ui->pwd->text();
+        QString encrypt=encryptlist->at(ui->comboBox->currentIndex());
         QByteArray SSID=ssid.toUtf8();
         QByteArray PWD=pwd.toUtf8();
-        QByteArray ENCRYPTION=getIndex().toUtf8();
+        QByteArray ENCRYPTION=encrypt.toUtf8();
         emit SendMessage(portConnectedName,SSID,PWD,ENCRYPTION);
     }
 }
