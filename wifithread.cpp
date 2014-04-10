@@ -54,7 +54,7 @@ void WifiThread::run()
                 {
                     temp="WEP";
                 }
-                else if (temp=="Ouvr" || temp=="Open") //For english
+                else //For english
                 {
                     temp="None";
                 }
