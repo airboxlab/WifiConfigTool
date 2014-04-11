@@ -23,12 +23,13 @@ void WifiThread::run()
         ListWifi=new QStringList();
         ListEncryption= new QStringList();
         QProcess sh;
-#if defined(Q_OS_MAC)
         sh.start("sh", QStringList() << "-c" << "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s");
         //sh.write("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s");
         sh.waitForFinished();
         QByteArray output = sh.readAll(); //sssss
         sh.close();
+//#endif
+
         QStringList strl=QString(output).split(QRegExp("\n\|\r\n\|\r"));
         QStringList strl2;
         //ui->display->setText(output);
@@ -40,7 +41,7 @@ void WifiThread::run()
             //ui->display->setText(ui->command->text()+"\n"+q);
             if (q.contains("WPA") && !q.contains("WPA2"))
             {
-                ListEncryption->append("WPA");
+               ListEncryption->append("WPA");
             }
             else if (q.contains("WPA2"))
             {
@@ -62,50 +63,12 @@ void WifiThread::run()
             //ui->display->append(strl2);
             //ui->comboBox->addItem(QString::number(strl2.indexOf(regExMacAddress)));
         }
-#elif defined(Q_OS_WIN)
-        sh.start("netsh wlan show network");
-        sh.waitForFinished();
-        *str=QString(sh.readAllStandardOutput());
-        *str1=str->split(QRegExp("\n\|\r\n\|\r"));
-        foreach (QString q,*str1)
-        {
-            if((q.contains("SSID")))
-            {
-                //test
-                //
-                temp=q.split(":").at(1);
-                temp=temp.mid(1,temp.length());
-                ListWifi->append(temp);
-            }
-            if ((q.contains("Authentification")))
-            {
-                temp=q.split(":").at(1);
-                temp=temp.mid(1,4);
-                if (temp=="WPA2")
-                {
-                    temp="WPA2";
-                }
-                else if (temp=="WPA-")
-                {
-                    temp="WPA";
-                }
-                else if (temp=="WEP ")
-                {
-                    temp="WEP";
-                }
-                else //For english
-                {
-                    temp="None";
-                }
-                ListEncryption->append(temp);
-            }
 
-        }
-#endif
-        if (sizeList!=ListWifi->length())
-        {
+
+       if (sizeList!=ListWifi->length())
+       {
             emit updateList(ListWifi,ListEncryption);
-        }
+       }
 
         QThread::msleep(1000);
     }
