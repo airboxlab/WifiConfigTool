@@ -15,7 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     include($$QTSERIALPORT_PROJECT_ROOT/src/serialport/qt4support/serialport.prf)
 }
 
-TARGET = "Airbolab WiFi Configurator"
+TARGET = "Airboxlab WiFi Configurator"
 TEMPLATE = app
 DEPLOYMENT.display_name=Airboxlab WiFi Configurator
 SOURCES += main.cpp\
