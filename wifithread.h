@@ -19,7 +19,8 @@ signals:
 private :
     QStringList *ListWifi;
     QStringList *ListEncryption;
-    QProcess *sh; //public slots:
+    QProcess *process;
+    //public slots:
     //    void test();
 };
 
