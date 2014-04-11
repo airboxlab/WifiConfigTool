@@ -18,11 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     t3=new WifiThread();
     t3->start();
     manualMode=false;
-    contextChanged(manualMode);
-    ui->encryption->addItem("None");
-    ui->encryption->addItem("WEP");
-    ui->encryption->addItem("WPA");
-    ui->encryption->addItem("WPA2");
+    contextChanged(ui->detect->isChecked());
     sending=false;
     encryptlist=new QStringList();
     statusBar()->showMessage("To begin, select the COM Port");
@@ -34,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this,SIGNAL(SaveConf(bool)),t2,SLOT(writeConf(bool)));
     connect(t1,SIGNAL(isPlugged(bool)),this,SLOT(connectedAirbox(bool)));
     connect(t3,SIGNAL(updateList(QStringList*,QStringList*)),this,SLOT(updateSSIDList(QStringList*,QStringList*)));
-    connect(ui->pushButton,SIGNAL(toggled(bool)),this,SLOT(contextChanged(bool)));
+    connect(ui->detect,SIGNAL(toggled(bool)),this,SLOT(contextChanged(bool)));
     //connect(ui->comboBox,SIGNAL(highlighted(int)),this,SLOT(lockPass()));
     QProcess sh;
 }
@@ -49,20 +45,24 @@ void MainWindow::contextChanged(bool n)
 
     else ui->pushButton->setText("Automatic");
     */
-    manualMode=n;
+    manualMode=!n;
     ui->comboBox->setVisible(false);
     ui->encryption->setVisible(false);
     ui->ssid->setVisible(false);
-    ui->comboBox->setVisible(!n);
-    ui->encryption->setVisible(n);
-    ui->ssid->setVisible(n);
+    ui->comboBox->setVisible(n);
+    ui->encryption->setVisible(!n);
+    ui->ssid->setVisible(!n);
+    if (!n)
+    {
+        //ui->verticalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+    }
 }
 
 void MainWindow::lockPass()
 {
     if (manualMode)
     {
-        if (ui->encryption->currentText()=="None")
+        if (ui->None->isChecked())
         {
             ui->pwd->setDisabled(true);
         }
@@ -248,7 +248,7 @@ void MainWindow::lockui(bool b)
 {
     if (manualMode)
     {
-        if (ui->encryption->currentText()=="None" || sending)
+        if (ui->None->isChecked() || sending)
         {
             ui->pwd->setDisabled(true);
         }
@@ -259,7 +259,7 @@ void MainWindow::lockui(bool b)
          ui->update->setDisabled(b);
          ui->ssid->setDisabled(b);
          ui->encryption->setDisabled(b);
-         ui->pushButton->setDisabled(b);
+         ui->detect->setDisabled(b);
     }
     else if (encryptlist->length()!=0)
     {
@@ -273,7 +273,7 @@ void MainWindow::lockui(bool b)
         }
         ui->update->setDisabled(b);
         ui->comboBox->setDisabled(b);
-        ui->pushButton->setDisabled(b);
+        ui->detect->setDisabled(b);
     }
 }
 
@@ -418,7 +418,22 @@ QString MainWindow::getIndex(int nssid)
     QString encrypt;
     if (manualMode)
     {
-        encrypt=ui->encryption->currentText();
+        if (ui->None->isChecked())
+        {
+            encrypt="None";
+        }
+        else if(ui->WEP->isChecked())
+        {
+            encrypt="WEP";
+        }
+        else if(ui->WPA->isChecked())
+        {
+            encrypt="WPA";
+        }
+        else if(ui->WPA2->isChecked())
+        {
+            encrypt="WPA2";
+        }
     }
     else encrypt=encryptlist->at(ui->comboBox->currentIndex());
     if (encrypt=="None")
