@@ -21,10 +21,12 @@ DEPLOYMENT.display_name=Airboxlab WiFi Configurator
 SOURCES += main.cpp\
         mainwindow.cpp \
     portthread.cpp \
-    threadsend.cpp
+    threadsend.cpp \
+    wifithread.cpp
 
 HEADERS  += mainwindow.h \
     portthread.h \
-    threadsend.h
+    threadsend.h \
+    wifithread.h
 
 FORMS    += mainwindow.ui

@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include "portthread.h"
 #include "threadsend.h"
+#include "wifithread.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,10 +26,11 @@ public:
     //QByteArray wait_for_response(int msec);
     void displayError(const char a);
     //void closeSerialPort();
-    QString getIndex();
+    QString getIndex(int nssid);
     //Check the data before sending it
     bool checkData();
     void lockui(bool);
+
 
 
     ~MainWindow();
@@ -42,6 +44,8 @@ private:
     QSerialPort *serial;
     PortThread *t1;
     ThreadSend *t2;
+    WifiThread *t3;
+    QStringList *encryptlist;
     QString portConnectedName;
     bool sending;
 
@@ -51,12 +55,13 @@ signals:
     void CloseConnection();
     void stopThreadPort(bool b);
 
+
 public slots:
     //Give status on the statusbar
     void ChangeStatusBar();
     //Control which widget is enabled
     void UnlockWifiParameter();
-
+    void lockPass();
     //Send all the connection info
     void sendConfig();
     //Connect to the device via serial
@@ -65,6 +70,7 @@ public slots:
     void write(int a);
     void UpdateList(QString q);
     void connectedAirbox(bool);
+    void updateSSIDList(QStringList *ssid,QStringList *encryption);
 };
 
 #endif // MAINWINDOW_H

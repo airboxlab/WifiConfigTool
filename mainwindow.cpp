@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,15 +15,48 @@ MainWindow::MainWindow(QWidget *parent) :
     t1->start();
     t2=new ThreadSend();
     t2->start();
+    t3=new WifiThread();
+    t3->start();
     sending=false;
+    encryptlist=new QStringList();
     statusBar()->showMessage("To begin, select the COM Port");
-    connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
+    //connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
     connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(test(QString,QByteArray,QByteArray,QByteArray)));
     connect(t2,SIGNAL(write(int)),this,SLOT(write(int)));
     connect(t1,SIGNAL(updateName(QString)),this,SLOT(UpdateList(QString)));
     connect(this,SIGNAL(SaveConf(bool)),t2,SLOT(writeConf(bool)));
     connect(t1,SIGNAL(isPlugged(bool)),this,SLOT(connectedAirbox(bool)));
+    connect(t3,SIGNAL(updateList(QStringList*,QStringList*)),this,SLOT(updateSSIDList(QStringList*,QStringList*)));
+    //connect(ui->comboBox,SIGNAL(highlighted(int)),this,SLOT(lockPass()));
+    QProcess sh;
+}
+
+void MainWindow::lockPass()
+{  /*
+    if (encryptlist->length()!=0)
+    {
+        if (getIndex(ui->comboBox->currentIndex())=="0")
+        {
+            ui->pwd->setDisabled(false);
+        }
+        else  ui->pwd->setDisabled(true);
+        //ui->update->setDisabled(b);
+    }
+    */
+}
+
+void MainWindow::updateSSIDList(QStringList *ssid,QStringList *encryption)
+{
+    encryptlist=encryption;
+    QString temp=ui->comboBox->currentText();
+    ui->comboBox->clear();
+
+    ui->comboBox->addItems(*ssid);
+    if (ssid->contains(temp))
+    {
+        ui->comboBox->setCurrentText(temp);
+    }
 }
 
 void MainWindow::write(int a)
@@ -174,25 +207,27 @@ void MainWindow::ChangeStatusBar()
 
 void MainWindow::UnlockWifiParameter()
 {
-    ui->ssid->setEnabled(true);
+    //ui->ssid->setEnabled(true);
     ui->pwd->setEnabled(true);
-    ui->encryption->setEnabled(true);
+    //ui->encryption->setEnabled(true);
 }
 
 void MainWindow::lockui(bool b)
 {
-    ui->encryption->setDisabled(b);
-    ui->ssid->setDisabled(b);
-    if (ui->None->isChecked())
+    if (encryptlist->length()!=0)
     {
-        ui->pwd->setDisabled(true);
+        if (getIndex(ui->comboBox->currentIndex())=="0")
+        {
+            ui->pwd->setDisabled(true);
+        }
+        else  ui->pwd->setDisabled(b);
+        ui->update->setDisabled(b);
     }
-    else  ui->pwd->setDisabled(b);
-    ui->update->setDisabled(b);
 }
 
 bool MainWindow::checkData()
 {
+    /*
     if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
     {
         QMessageBox::warning(
@@ -201,6 +236,7 @@ bool MainWindow::checkData()
                     tr("No SSID & No password") );
         return false;
     }
+
     else if ((!ui->None->isChecked()) && ui->pwd->text()==NULL)
     {
         QMessageBox::warning(
@@ -217,7 +253,7 @@ bool MainWindow::checkData()
                     tr("No SSID") );
         return false;
     }
-    else return true;
+    else*/ return true;
 }
 
 void MainWindow::displayError(const char val)
@@ -279,13 +315,14 @@ void MainWindow::sendConfig()
     }
     if (checkData())
     {
-        lockui(true);
         //TryConnect();
-        QString ssid=ui->ssid->text();
+        lockui(true);
+        QString ssid=ui->comboBox->currentText();
         QString pwd=ui->pwd->text();
+        QString encrypt=getIndex(ui->comboBox->currentIndex());
         QByteArray SSID=ssid.toUtf8();
         QByteArray PWD=pwd.toUtf8();
-        QByteArray ENCRYPTION=getIndex().toUtf8();
+        QByteArray ENCRYPTION=encrypt.toUtf8();
         emit SendMessage(portConnectedName,SSID,PWD,ENCRYPTION);
     }
 }
@@ -309,26 +346,27 @@ QByteArray MainWindow::wait_for_response(int msec)
 
 }
 */
-
-QString MainWindow::getIndex()
+QString MainWindow::getIndex(int nssid)
 {
     QString i="0";
-    if (ui->None->isChecked())
+    QString encrypt=encryptlist->at(ui->comboBox->currentIndex());
+    if (encrypt=="None")
     {
         i="0";
     }
-    else if (ui->WEP->isChecked())
+    else if (encrypt=="WEP")
     {
         i="1";
     }
-    else if (ui->WPA->isChecked())
+    else if (encrypt=="WPA")
     {
         i="2";
     }
-    else if (ui->WPA2->isChecked())
+    else if (encrypt=="WPA2")
     {
         i="3";
     }
+    qDebug() << i;
     return i;
 }
 
