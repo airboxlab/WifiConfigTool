@@ -27,10 +27,8 @@ void WifiThread::run()
         sh.start("sh", QStringList() << "-c" << "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s");
         //sh.write("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s");
         sh.waitForFinished();
-        QByteArray output = sh.readAll();
+        QByteArray output = sh.readAll(); //sssss
         sh.close();
-
-
         QStringList strl=QString(output).split(QRegExp("\n\|\r\n\|\r"));
         QStringList strl2;
         //ui->display->setText(output);

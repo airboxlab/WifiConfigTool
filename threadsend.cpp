@@ -111,12 +111,12 @@ void ThreadSend::writeConf(bool b)
         if (m_readData[0]=='0')
         {
             emit write(14);
-            //CloseConnec();
+            CloseConnec();
         }
         else
         {
-            CloseConnec();
             emit write(16);
+            CloseConnec();
         }
     }
 }

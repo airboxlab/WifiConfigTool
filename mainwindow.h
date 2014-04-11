@@ -45,6 +45,7 @@ private:
     PortThread *t1;
     ThreadSend *t2;
     WifiThread *t3;
+    bool manualMode;
     QStringList *encryptlist;
     QString portConnectedName;
     bool sending;
@@ -70,6 +71,7 @@ public slots:
     void write(int a);
     void UpdateList(QString q);
     void connectedAirbox(bool);
+    void contextChanged(bool);
     void updateSSIDList(QStringList *ssid,QStringList *encryption);
 };
 
