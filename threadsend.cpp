@@ -123,6 +123,7 @@ void ThreadSend::writeConf(bool b)
 
 void ThreadSend::closeSerialPort()
 {
+
     serial->close();
 }
 

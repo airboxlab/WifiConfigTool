@@ -208,6 +208,11 @@ void MainWindow::noEncryption(bool b)
 
 MainWindow::~MainWindow()
 {
+    delete serial;
+    delete t1;
+    delete t2;
+    delete t3;
+    delete encryptlist;
     delete ui;
 }
 
@@ -226,6 +231,7 @@ void MainWindow::connectedAirbox(bool b)
             ui->statusBar->showMessage("Airboxlab not detected : Please plug it to the computer");
             enabled=true;
         }
+        connected=!enabled;
         lockui(enabled);
     }
 }
@@ -248,7 +254,7 @@ void MainWindow::lockui(bool b)
 {
     if (manualMode)
     {
-        if (ui->None->isChecked() || sending)
+        if (ui->None->isChecked() || sending || !connected)
         {
             ui->pwd->setDisabled(true);
         }
@@ -263,7 +269,7 @@ void MainWindow::lockui(bool b)
     }
     else if (encryptlist->length()!=0)
     {
-        if (getIndex(ui->comboBox->currentIndex())=="0" || sending)
+        if (getIndex(ui->comboBox->currentIndex())=="0" || sending || !connected)
         {
             ui->pwd->setDisabled(true);
         }
@@ -393,25 +399,6 @@ void MainWindow::sendConfig()
 }
 
 
-/*
-QByteArray MainWindow::wait_for_response(int msec)
-{
-    bool b=true;
-    QByteArray tmp;
-    serial->waitForReadyRead(msec);
-    while (b)
-    {
-        tmp=serial->read(1);
-        ui->statusBar->showMessage(tmp);
-        if (tmp=="#")
-        {
-            b=false;
-        }
-    }
-    return serial->readAll();
-
-}
-*/
 QString MainWindow::getIndex(int nssid)
 {
     QString i="0";
@@ -456,10 +443,3 @@ QString MainWindow::getIndex(int nssid)
     return i;
 }
 
-/*
-void MainWindow::closeSerialPort()
-{
-    serial->close();
-    //ui->statusBar->showMessage(tr("Disconnected"));
-}
-*/

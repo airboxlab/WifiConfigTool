@@ -49,6 +49,7 @@ private:
     QStringList *encryptlist;
     QString portConnectedName;
     bool sending;
+    bool connected;
 
 signals:
     void SendMessage(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
