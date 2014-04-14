@@ -102,7 +102,7 @@ void WifiThread::run()
 
         }
 #endif
-        if (sizeList!=ListWifi->length())
+        if (sizeList!=ListWifi->length() || ListWifi->length()==0)
         {
             if (ListWifi->length()==0)
             {

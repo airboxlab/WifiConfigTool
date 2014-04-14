@@ -47,6 +47,7 @@ void ThreadSend::test(QString portName,QByteArray ssid,QByteArray pwd, QByteArra
             m_readData=wait_for_response(120000);
             if (m_readData[0]!='0')
             {
+                qDebug() << m_readData[0];
                 emit write(13);
             }
             else
@@ -55,8 +56,8 @@ void ThreadSend::test(QString portName,QByteArray ssid,QByteArray pwd, QByteArra
                 m_readData = wait_for_response(10000);
                 if (m_readData[0] != '0')
                 {
-                    emit write(15);
                     CloseConnec();
+                    emit write(15);      
                 }
                 else
                 {

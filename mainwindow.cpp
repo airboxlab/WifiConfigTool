@@ -17,12 +17,14 @@ MainWindow::MainWindow(QWidget *parent) :
     t2->start();
     t3=new WifiThread();
     t3->start();
-    manualMode=false;
-    contextChanged(ui->detect->isChecked());
+    //manualMode == true -> in manual mode
+    manualMode=(bool*)malloc(sizeof(bool));
+    //*manualMode=false;
+    contextChanged(true);
     sending=false;
     encryptlist=new QStringList();
     statusBar()->showMessage("To begin, select the COM Port");
-    //connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
+    connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
     connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(test(QString,QByteArray,QByteArray,QByteArray)));
     connect(t2,SIGNAL(write(int)),this,SLOT(write(int)));
@@ -38,45 +40,44 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::emptyList(bool b)
 {
+
     if (b)
     {
-        manualMode=true;
+        contextChanged(!b);
+        ui->detect->setText("Detect WiFi signal (No signal found)");
         ui->detect->setChecked(false);
         ui->detect->setCheckable(false);
     }
     else
     {
-        manualMode=false;
         ui->detect->setCheckable(true);
+        ui->detect->setText("Detect WiFi signal");
     }
+    qDebug() << "emptylist" << *manualMode;
 }
 
 //true ->  manuel
+//toggled -> manual=false
 void MainWindow::contextChanged(bool n)
 {
-    /*if (manualMode)
+    qDebug() << n;
+    qDebug() << "manual" << *manualMode;
+    if (!n)
     {
-        ui->pushButton->setText("Manual");
+        *manualMode=true;
     }
-
-    else ui->pushButton->setText("Automatic");
-    */
-    manualMode=!n;
+    else *manualMode=false;
     ui->comboBox->setVisible(false);
     ui->encryption->setVisible(false);
     ui->ssid->setVisible(false);
     ui->comboBox->setVisible(n);
     ui->encryption->setVisible(!n);
     ui->ssid->setVisible(!n);
-    if (!n)
-    {
-        //ui->verticalSpacer->changeSize(0,0, QSizePolicy::Fixed, QSizePolicy::Fixed);
-    }
 }
 
 void MainWindow::lockPass()
 {
-    if (manualMode)
+    if (*manualMode)
     {
         if (ui->None->isChecked())
         {
@@ -224,6 +225,7 @@ void MainWindow::noEncryption(bool b)
 
 MainWindow::~MainWindow()
 {
+    free(manualMode);
     delete ui;
 }
 
@@ -263,7 +265,8 @@ void MainWindow::UnlockWifiParameter()
 
 void MainWindow::lockui(bool b)
 {
-    if (manualMode)
+    qDebug() << "lockUi" << *manualMode;
+    if (*manualMode)
     {
         if (ui->None->isChecked() || sending || !connected)
         {
@@ -273,10 +276,10 @@ void MainWindow::lockui(bool b)
         {
             ui->pwd->setDisabled(false);
         }
-         ui->update->setDisabled(b);
-         ui->ssid->setDisabled(b);
-         ui->encryption->setDisabled(b);
-         ui->detect->setDisabled(b);
+        ui->update->setDisabled(b);
+        ui->ssid->setDisabled(b);
+        ui->encryption->setDisabled(b);
+        ui->detect->setDisabled(b);
     }
     else if (encryptlist->length()!=0)
     {
@@ -286,7 +289,7 @@ void MainWindow::lockui(bool b)
         }
         else
         {
-        ui->pwd->setDisabled(false);
+            ui->pwd->setDisabled(false);
         }
         ui->update->setDisabled(b);
         ui->comboBox->setDisabled(b);
@@ -296,17 +299,37 @@ void MainWindow::lockui(bool b)
 
 bool MainWindow::checkData()
 {
-    /*
-    if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
-    {
-        QMessageBox::warning(
-                    this,
-                    tr("Application Name"),
-                    tr("No SSID & No password") );
-        return false;
-    }
 
-    else if ((!ui->None->isChecked()) && ui->pwd->text()==NULL)
+    if(*manualMode)
+    {
+        if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
+        {
+            QMessageBox::warning(
+                        this,
+                        tr("Application Name"),
+                        tr("No SSID & No password") );
+            return false;
+        }
+
+        else if ((!ui->None->isChecked()) && ui->pwd->text()==NULL)
+        {
+            QMessageBox::warning(
+                        this,
+                        tr("Application Name"),
+                        tr("Empty password") );
+            return false;
+        }
+        else if (ui->ssid->text()==NULL)
+        {
+            QMessageBox::warning(
+                        this,
+                        tr("Application Name"),
+                        tr("No SSID") );
+            return false;
+        }
+        else return true;
+    }
+    else if (ui->pwd->text()==NULL && ui->pwd->isEnabled())
     {
         QMessageBox::warning(
                     this,
@@ -314,15 +337,8 @@ bool MainWindow::checkData()
                     tr("Empty password") );
         return false;
     }
-    else if (ui->ssid->text()==NULL)
-    {
-        QMessageBox::warning(
-                    this,
-                    tr("Application Name"),
-                    tr("No SSID") );
-        return false;
-    }
-    else*/ return true;
+    else return true;
+
 }
 
 void MainWindow::displayError(const char val)
@@ -385,28 +401,31 @@ void MainWindow::sendConfig()
     QString ssid;
     QString pwd;
     QString encrypt;
-    if (manualMode)
+    if (checkData())
+
     {
-        if (checkData())
+        if (*manualMode)
         {
             lockui(true);
             ssid=ui->ssid->text();
             pwd=ui->pwd->text();
             encrypt=getIndex(1);
         }
+        else
+        {
+            //TryConnect();
+            lockui(true);
+            ssid=ui->comboBox->currentText();
+            pwd=ui->pwd->text();
+            encrypt=getIndex(ui->comboBox->currentIndex());
+        }
+        QByteArray SSID=ssid.toUtf8();
+        QByteArray PWD=pwd.toUtf8();
+        QByteArray ENCRYPTION=encrypt.toUtf8();
+        qDebug() << "ssid" << SSID;
+        qDebug() << "encryption" << ENCRYPTION;
+        emit SendMessage(portConnectedName,SSID,PWD,ENCRYPTION);
     }
-    else
-    {
-        //TryConnect();
-        lockui(true);
-        ssid=ui->comboBox->currentText();
-        pwd=ui->pwd->text();
-        encrypt=getIndex(ui->comboBox->currentIndex());
-    }
-    QByteArray SSID=ssid.toUtf8();
-    QByteArray PWD=pwd.toUtf8();
-    QByteArray ENCRYPTION=encrypt.toUtf8();
-    emit SendMessage(portConnectedName,SSID,PWD,ENCRYPTION);
 }
 
 
@@ -414,7 +433,8 @@ QString MainWindow::getIndex(int nssid)
 {
     QString i="0";
     QString encrypt;
-    if (manualMode)
+    qDebug() << "getIndex" << *manualMode;
+    if (*manualMode)
     {
         if (ui->None->isChecked())
         {
@@ -450,7 +470,6 @@ QString MainWindow::getIndex(int nssid)
     {
         i="3";
     }
-    qDebug() << i;
     return i;
 }
 
