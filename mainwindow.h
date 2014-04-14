@@ -74,6 +74,7 @@ public slots:
     void connectedAirbox(bool);
     void contextChanged(bool);
     void updateSSIDList(QStringList *ssid,QStringList *encryption);
+    void emptyList(bool b);
 };
 
 #endif // MAINWINDOW_H

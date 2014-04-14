@@ -16,6 +16,7 @@ protected :
     void run();
 signals:
     void updateList(QStringList *wifi,QStringList *encryption);
+    void emptyList(bool);
 private :
     QStringList *ListWifi;
     QStringList *ListEncryption;

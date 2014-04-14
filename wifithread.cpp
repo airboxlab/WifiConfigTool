@@ -104,6 +104,11 @@ void WifiThread::run()
 #endif
         if (sizeList!=ListWifi->length())
         {
+            if (ListWifi->length()==0)
+            {
+                emit emptyList(true);
+            }
+            else emit emptyList(false);
             emit updateList(ListWifi,ListEncryption);
         }
 

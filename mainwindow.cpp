@@ -31,8 +31,24 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(t1,SIGNAL(isPlugged(bool)),this,SLOT(connectedAirbox(bool)));
     connect(t3,SIGNAL(updateList(QStringList*,QStringList*)),this,SLOT(updateSSIDList(QStringList*,QStringList*)));
     connect(ui->detect,SIGNAL(toggled(bool)),this,SLOT(contextChanged(bool)));
+    connect(t3,SIGNAL(emptyList(bool)),this,SLOT(emptyList(bool)));
     //connect(ui->comboBox,SIGNAL(highlighted(int)),this,SLOT(lockPass()));
     QProcess sh;
+}
+
+void MainWindow::emptyList(bool b)
+{
+    if (b)
+    {
+        manualMode=true;
+        ui->detect->setChecked(false);
+        ui->detect->setCheckable(false);
+    }
+    else
+    {
+        manualMode=false;
+        ui->detect->setCheckable(true);
+    }
 }
 
 //true ->  manuel
@@ -102,19 +118,19 @@ void MainWindow::write(int a){
     switch(a)
     {
     case 1:
-        m="Connecting to serial";
+        m="Connecting to serial...";
         break;
     case 2:
-        m="Entering configuration mode";
+        m="Entering configuration mode...";
         break;
     case 3:
-        m="Sending new configuration";
+        m="Sending new configuration...";
         break;
     case 4:
-        m="Waiting for information";
+        m="Waiting for information...";
         break;
     case 5:
-        m="Saving";
+        m="Saving...";
         break;
     case 6:
     {
@@ -208,11 +224,6 @@ void MainWindow::noEncryption(bool b)
 
 MainWindow::~MainWindow()
 {
-    delete serial;
-    delete t1;
-    delete t2;
-    delete t3;
-    delete encryptlist;
     delete ui;
 }
 
