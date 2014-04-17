@@ -15,76 +15,67 @@ void ThreadSend::run()
     exec();
 }
 
-void ThreadSend::test(QString portName,QByteArray ssid,QByteArray pwd, QByteArray encryption)
+//Only called when the user click on the button and the data are checked
+void ThreadSend::SendConf(QString portName,QByteArray ssid,QByteArray pwd, QByteArray encryption)
 {
-    ThreadSend::TryConnect(portName);
-    QByteArray  m_readData;
-    serial->write("w");
-    m_readData=ThreadSend::wait_for_response(15000);
-    if (m_readData[0]!='0')
+    //We try to connect
+    if (ThreadSend::TryConnect(portName))
     {
-        emit write(11);
-        CloseConnec();
-    }
-    else
-    {
-        emit write(3);
-        serial->write(ssid);
-        serial->write("\r");
-        serial->write(pwd);
-        serial->write("\r");
-        serial->write(encryption);
-        //wait for the device to answer that it has read everything (CONFIG_ERROR_NO_ERROR) + timeout
-        m_readData=wait_for_response(5000);
+        QByteArray  m_readData;
+        //We enter in config mode
+        serial->write("w");
+        m_readData=ThreadSend::wait_for_response(15000);
         if (m_readData[0]!='0')
         {
-            emit write(12);
+            emit write(11);
             CloseConnec();
         }
         else
         {
-            emit write(4);
-            m_readData=wait_for_response(120000);
+            //If we're in config mode, we send the informations
+            emit write(3);
+            serial->write(ssid);
+            serial->write("\r");
+            serial->write(pwd);
+            serial->write("\r");
+            serial->write(encryption);
+            //wait for the device to answer that it has read everything (CONFIG_ERROR_NO_ERROR) + timeout
+            m_readData=wait_for_response(5000);
             if (m_readData[0]!='0')
             {
-                qDebug() << m_readData[0];
-                emit write(13);
+                emit write(12);
+                CloseConnec();
             }
             else
             {
-                emit write(5);
-                m_readData = wait_for_response(10000);
-                if (m_readData[0] != '0')
+                emit write(4);
+                m_readData=wait_for_response(120000);
+                if (m_readData[0]!='0')
                 {
-                    CloseConnec();
-                    emit write(15);      
+                    qDebug() << m_readData[0];
+                    emit write(13);
                 }
                 else
                 {
-                    emit write(6);
-                    CloseConnec();
+                    emit write(5);
+                    m_readData = wait_for_response(10000);
+                    if (m_readData[0] != '0')
+                    {
+                        CloseConnec();
+                        emit write(15);
+                    }
+                    else
+                    {
+                        emit write(6);
+                        CloseConnec();
+                    }
                 }
-                /*
-                else if (m_readData[0]=='4' || m_readData[0]=='b' || m_readData[0]=='8' || m_readData[0]=='9'|| m_readData[0]=='a')
-                {
-                    //Boxmessage on the GUI
-                    emit write(10);
-                    //int reponse = QMessageBox::warning(this, "Could not connect", "COULD NOT CONNECT :Do you want to save the configuration anyway?",QMessageBox::Yes|QMessageBox::No);
-                    //if (reponse==QMessageBox::Yes)
-                    //{
-
-                    //}
-                    //else serial->write("n");
-
-                }*/
             }
         }
     }
-
-    // closeSerialPort();
-
 }
 
+//Called when the airboxlab couldn't connect to the ap but the user still want to save the configuration
 void ThreadSend::writeConf(bool b)
 {
     QByteArray  m_readData;
@@ -122,12 +113,8 @@ void ThreadSend::writeConf(bool b)
     }
 }
 
-void ThreadSend::closeSerialPort()
-{
 
-    serial->close();
-}
-
+//Wait for the response of the airboxlab for msec ms then read the response
 QByteArray ThreadSend::wait_for_response(int msec)
 {
     bool b=true;
@@ -145,7 +132,8 @@ QByteArray ThreadSend::wait_for_response(int msec)
 
 }
 
-void ThreadSend::TryConnect(QString str)
+//Try to connect then return true if connected, false otherwise
+bool ThreadSend::TryConnect(QString str)
 {
     serial->setPortName(str);
     //if there is no open serial communication
@@ -158,12 +146,18 @@ void ThreadSend::TryConnect(QString str)
         if (serial->setBaudRate(BAUDRATE))
         {
             emit write(2);
-
+            return true;
         }
     } else {
         emit write(10);
+        return false;
     }
 
+}
+
+void ThreadSend::closeSerialPort()
+{
+    serial->close();
 }
 
 void ThreadSend::CloseConnec()

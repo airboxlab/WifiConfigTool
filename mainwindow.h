@@ -23,16 +23,11 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    //QByteArray wait_for_response(int msec);
-    void displayError(const char a);
-    //void closeSerialPort();
     QString getIndex(int nssid);
     //Check the data before sending it
     bool checkData();
+    //Lock the UI when needed (sending, no airboxlab)
     void lockui(bool);
-
-
-
     ~MainWindow();
 
 private:
@@ -41,39 +36,50 @@ private:
     QList<QSerialPortInfo> serialPortInfoList;
     QTimer m_timer;
     QByteArray  m_readData;
-    QSerialPort *serial;
+    //Detect if the airboxlab is connected
     PortThread *t1;
+    //Update credential
     ThreadSend *t2;
+    //Check if wifi available and type of encryption
     WifiThread *t3;
+    //true -> in manual mode
     bool *manualMode;
+    //Contains all the encryption of the wifi signal available
     QStringList *encryptlist;
+    //Contains the name of the serial port where the airboxlab is
     QString portConnectedName;
+    //true if sending the conf (t2 slot running)
     bool sending;
+    //true if the airboxlab is connected
     bool connected;
 
 signals:
+    //Send the information to perform the operation on the airboxlab
     void SendMessage(QString port,QByteArray ssid,QByteArray pwd, QByteArray encryption);
+    //If the user choose to save conf when the airboxlab can't connect to the AP
     void SaveConf(bool b);
+    //Send to the send thread to close the serial connection
     void CloseConnection();
+    //Send to the port thread to stop
     void stopThreadPort(bool b);
 
 
 public slots:
-    //Give status on the statusbar
-    void ChangeStatusBar();
-    //Control which widget is enabled
-    void UnlockWifiParameter();
+    //Lock the pwd line edit  when needed (no encryption)
     void lockPass();
     //Send all the connection info
     void sendConfig();
-    //Connect to the device via serial
-    //void TryConnect();
-    void noEncryption(bool b);
+    //Write messages from the wifi thread on the status bar
     void write(int a);
-    void UpdateList(QString q);
+    //Update the port name where the airboxlab is connected
+    void UpdatePort(QString q);
+    //Called if the airboxlab is connect
     void connectedAirbox(bool);
+    //Called if the context changed (manual-automatic)
     void contextChanged(bool);
+    //Update the SSID List found by the wifi thread
     void updateSSIDList(QStringList *ssid,QStringList *encryption);
+    //Change the contect automatically if no wifi found (true-> change to manual)
     void emptyList(bool b);
 };
 

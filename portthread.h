@@ -5,6 +5,7 @@
 #include <QSerialPortInfo>
 #include <QStringList>
 
+//This thread is used to know if the airboxlab is connected to the computer or not
 class PortThread : public QThread
 {
     Q_OBJECT
@@ -12,18 +13,18 @@ public:
     explicit PortThread(QObject *parent = 0);
 protected :
     void run();
+
 signals:
+    //Emit when airboxlab discovered with the name of the port
     void updateName(QString);
+    //Emit true if connected, false if it isn't
     void isPlugged(bool);
-public slots:
-    void ProcessingConf(bool);
+
 private :
+    //Length of the list which contains the ports information
     int length;
-    bool runable;
+    //Contains the ports information
     QList<QSerialPortInfo> serialPortInfoList;
-    QStringList *ListPort;
-    //public slots:
-    //    void test();
 };
 
 #endif // PORTTHREAD_H

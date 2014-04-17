@@ -7,37 +7,38 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 
 {
-    /*
-    serial=new QSerialPort();
-    */
     ui->setupUi(this);
+
+    //Setting up the thread
     t1=new PortThread();
     t1->start();
     t2=new ThreadSend();
     t2->start();
     t3=new WifiThread();
     t3->start();
+
     //manualMode == true -> in manual mode
     manualMode=(bool*)malloc(sizeof(bool));
-    //*manualMode=false;
+    //automatic mode by default
     contextChanged(true);
+    //Not sending
     sending=false;
+
     encryptlist=new QStringList();
-    statusBar()->showMessage("To begin, select the COM Port");
-    connect(ui->None,SIGNAL(toggled(bool)),this,SLOT(noEncryption(bool)));
+
+    //All the connection
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
-    connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(test(QString,QByteArray,QByteArray,QByteArray)));
+    connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(SendConf(QString,QByteArray,QByteArray,QByteArray)));
     connect(t2,SIGNAL(write(int)),this,SLOT(write(int)));
-    connect(t1,SIGNAL(updateName(QString)),this,SLOT(UpdateList(QString)));
+    connect(t1,SIGNAL(updateName(QString)),this,SLOT(UpdatePort(QString)));
     connect(this,SIGNAL(SaveConf(bool)),t2,SLOT(writeConf(bool)));
     connect(t1,SIGNAL(isPlugged(bool)),this,SLOT(connectedAirbox(bool)));
     connect(t3,SIGNAL(updateList(QStringList*,QStringList*)),this,SLOT(updateSSIDList(QStringList*,QStringList*)));
     connect(ui->detect,SIGNAL(toggled(bool)),this,SLOT(contextChanged(bool)));
     connect(t3,SIGNAL(emptyList(bool)),this,SLOT(emptyList(bool)));
-    //connect(ui->comboBox,SIGNAL(highlighted(int)),this,SLOT(lockPass()));
-    QProcess sh;
 }
 
+//Change the contect automatically if no wifi found (true-> change to manual)
 void MainWindow::emptyList(bool b)
 {
 
@@ -56,8 +57,9 @@ void MainWindow::emptyList(bool b)
     qDebug() << "emptylist" << *manualMode;
 }
 
-//true ->  manuel
+//true ->  automatic
 //toggled -> manual=false
+//Called if the context changed (manual-automatic)
 void MainWindow::contextChanged(bool n)
 {
     qDebug() << n;
@@ -67,6 +69,7 @@ void MainWindow::contextChanged(bool n)
         *manualMode=true;
     }
     else *manualMode=false;
+    //Switching the view
     ui->comboBox->setVisible(false);
     ui->encryption->setVisible(false);
     ui->ssid->setVisible(false);
@@ -75,13 +78,16 @@ void MainWindow::contextChanged(bool n)
     ui->ssid->setVisible(!n);
 }
 
+ //Lock the pwd line edit  when needed (no encryption)
 void MainWindow::lockPass()
 {
+    //Disable depending on the mode
     if (*manualMode)
     {
         if (ui->None->isChecked())
         {
-            ui->pwd->setDisabled(true);
+            ui->pwd->clear();
+            ui->pwd->setDisabled(true);       
         }
         else ui->pwd->setDisabled(false);
     }
@@ -91,24 +97,31 @@ void MainWindow::lockPass()
         {
             ui->pwd->setDisabled(false);
         }
-        else  ui->pwd->setDisabled(true);
-        //ui->update->setDisabled(b);
+        else
+        {
+            ui->pwd->clear();
+            ui->pwd->setDisabled(true);
+        }
     }
 }
 
+//Update the SSID List found by the wifi thread
 void MainWindow::updateSSIDList(QStringList *ssid,QStringList *encryption)
 {
     encryptlist=encryption;
+    //Store which item is select before updating
     QString temp=ui->comboBox->currentText();
     ui->comboBox->clear();
 
     ui->comboBox->addItems(*ssid);
+    //To keep the index on the one chose by the user
     if (ssid->contains(temp))
     {
         ui->comboBox->setCurrentText(temp);
     }
 }
 
+//Write messages from the wifi thread on the status bar
 void MainWindow::write(int a){
     //If error (a>=10), close connection, thread)
     if (a>=10 && a!=13)
@@ -212,16 +225,13 @@ void MainWindow::write(int a){
     ui->statusBar->showMessage(m);
 
 }
-void MainWindow::UpdateList(QString q)
+
+//Update the port name where the airboxlab is connected
+void MainWindow::UpdatePort(QString q)
 {
     portConnectedName=q;
 }
 
-void MainWindow::noEncryption(bool b)
-{
-    ui->pwd->clear();
-    ui->pwd->setDisabled(b);
-}
 
 MainWindow::~MainWindow()
 {
@@ -229,8 +239,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//Called if the airboxlab is connect
 void MainWindow::connectedAirbox(bool b)
 {
+    //Not updating if sending
     if (!sending)
     {
         bool enabled=false;
@@ -250,24 +262,14 @@ void MainWindow::connectedAirbox(bool b)
 }
 
 
-
-void MainWindow::ChangeStatusBar()
-{
-    statusBar()->showMessage("Enter the WiFi parameter");
-}
-
-void MainWindow::UnlockWifiParameter()
-{
-    //ui->ssid->setEnabled(true);
-    ui->pwd->setEnabled(true);
-    //ui->encryption->setEnabled(true);
-}
-
+//Lock the UI when needed (sending, no airboxlab)
 void MainWindow::lockui(bool b)
 {
     qDebug() << "lockUi" << *manualMode;
+    //Check the mode
     if (*manualMode)
     {
+        //Disable the pwd when needed
         if (ui->None->isChecked() || sending || !connected)
         {
             ui->pwd->setDisabled(true);
@@ -276,6 +278,7 @@ void MainWindow::lockui(bool b)
         {
             ui->pwd->setDisabled(false);
         }
+        //Enable or disable the ui
         ui->update->setDisabled(b);
         ui->ssid->setDisabled(b);
         ui->encryption->setDisabled(b);
@@ -283,6 +286,7 @@ void MainWindow::lockui(bool b)
     }
     else if (encryptlist->length()!=0)
     {
+        //Get the encryption mode for the selected SSID
         if (getIndex(ui->comboBox->currentIndex())=="0" || sending || !connected)
         {
             ui->pwd->setDisabled(true);
@@ -297,9 +301,10 @@ void MainWindow::lockui(bool b)
     }
 }
 
+//Check the data before sending it depending on the mode
 bool MainWindow::checkData()
 {
-
+    //In manual mode, we check if all data are entered (ssid, pwd if needed)
     if(*manualMode)
     {
         if (ui->ssid->text()==NULL && ((!ui->None->isChecked()) && ui->pwd->text()==NULL) )
@@ -329,6 +334,7 @@ bool MainWindow::checkData()
         }
         else return true;
     }
+    //In automatic, we check that the pwd is entered, if needed
     else if (ui->pwd->text()==NULL && ui->pwd->isEnabled())
     {
         QMessageBox::warning(
@@ -341,57 +347,11 @@ bool MainWindow::checkData()
 
 }
 
-void MainWindow::displayError(const char val)
-{
-    QString str;
-    switch (val)
-    {
-    case '0':
-        str="Ok";
-        break;
-    case '1':
-        str="SSID Length";
-        break;
-    case '2':
-        str="Pass length";
-        break;
-    case '3':
-        str="Encrypt mode";
-        break;
-    case '4':
-        str="NEW AP";
-        break;
-    case '5':
-        str="Error saving";
-        break;
-    case '6':
-        str="Timeout";
-        break;
-    case '7':
-        str="no config saved to restore";
-        break;
-    case '8':
-        str="could not get an IP";
-        break;
-    case '9':
-        str="could not get the adress of the backend";
-        break;
-    case 'a':
-        str="could not ping the backend";
-        break;
-    case 'b':
-        str="timeout2";
-        break;
-    case 'c':
-        str="settinf profile fail";
-        break;
-    }
-    ui->statusBar->showMessage(str);
 
-}
-
+//Send all the connection info
 void MainWindow::sendConfig()
 {
+    //We are starting the sending process
     sending=true;
 
     if (t2->isFinished())
@@ -401,9 +361,11 @@ void MainWindow::sendConfig()
     QString ssid;
     QString pwd;
     QString encrypt;
-    if (checkData())
 
+    //Check if the data are ok
+    if (checkData())
     {
+        //We get the data depending on the mode
         if (*manualMode)
         {
             lockui(true);
@@ -424,11 +386,12 @@ void MainWindow::sendConfig()
         QByteArray ENCRYPTION=encrypt.toUtf8();
         qDebug() << "ssid" << SSID;
         qDebug() << "encryption" << ENCRYPTION;
+        //We send it to the send thread
         emit SendMessage(portConnectedName,SSID,PWD,ENCRYPTION);
     }
 }
 
-
+//Get the encryption type and return the corresponding number
 QString MainWindow::getIndex(int nssid)
 {
     QString i="0";

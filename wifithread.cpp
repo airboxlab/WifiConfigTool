@@ -5,7 +5,6 @@ WifiThread::WifiThread(QObject *parent) :
 {
     ListWifi = new QStringList();
     ListEncryption = new QStringList();
-   // sh= QProcess(this);
     setParent(0);
     moveToThread(this);
 }
@@ -17,27 +16,31 @@ void WifiThread::run()
     QStringRef qref;
     QString temp;
     int sizeList=0;
+    //Infinite loop
     while (true)
     {
         sizeList=ListWifi->length();
         ListWifi=new QStringList();
         ListEncryption= new QStringList();
         QProcess sh;
+//On Mac Os
 #if defined(Q_OS_MAC)
+        //We start the aiport -s command in the terminal
         sh.start("sh", QStringList() << "-c" << "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s");
-        //sh.write("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s");
         sh.waitForFinished();
+        //We get the anwser
         QByteArray output = sh.readAll(); //sssss
         sh.close();
+        //Split the string in a QStringList containing each line
         QStringList strl=QString(output).split(QRegExp("\n\|\r\n\|\r"));
         QStringList strl2;
-        //ui->display->setText(output);
         int leng=strl.length();
         int i=0;
         QString temp;
+        //In each line
         foreach (QString q,strl)
         {
-            //ui->display->setText(ui->command->text()+"\n"+q);
+            //We search for the encryption mode
             if (q.contains("WPA") && !q.contains("WPA2"))
             {
                 ListEncryption->append("WPA");
@@ -54,19 +57,22 @@ void WifiThread::run()
             {
                 ListEncryption->append("None");
             }
+            //We get the ssid by splitting with ":" and extract the ssid with cleanString (terminal : SSID XX:XX:XX:XX:XX ...)
             strl2=q.split(":");
             if (strl2.length()>1)
             {
                 ListWifi->append(cleanString(strl2.at(0)));
             }
-            //ui->display->append(strl2);
-            //ui->comboBox->addItem(QString::number(strl2.indexOf(regExMacAddress)));
         }
+    //If on windows
 #elif defined(Q_OS_WIN)
+        //We start the netsh cmd
         sh.start("netsh wlan show network");
         sh.waitForFinished();
+        //We read and split in a QStringList containing each line
         *str=QString(sh.readAllStandardOutput());
         *str1=str->split(QRegExp("\n\|\r\n\|\r"));
+        //We extract the SSID and encryption mode
         foreach (QString q,*str1)
         {
             if((q.contains("SSID")))
@@ -102,6 +108,7 @@ void WifiThread::run()
 
         }
 #endif
+        //If there is change or there is no wifi available
         if (sizeList!=ListWifi->length() || ListWifi->length()==0)
         {
             if (ListWifi->length()==0)
@@ -117,17 +124,11 @@ void WifiThread::run()
     exec();
 }
 
-
+//Get the SSID from a line from airport -s
 QString WifiThread::cleanString(QString q)
 {
-    int i=0;
-    //QChar *test=new QChar(0);
-    QString result=q;
-    //int length=q.length()
     int t=q.toStdString().find_first_not_of(" \t");
-    int length=q.size()-t;
     return q.mid(t,q.length()-t-3);
-    // else return " ";
 }
 
 
