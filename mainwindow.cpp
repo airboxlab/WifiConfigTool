@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     t2->start();
     t3=new WifiThread();
     t3->start();
+    this->centralWidget()->setLayout(ui->verticalLayout_3);
 
     //manualMode == true -> in manual mode
     manualMode=(bool*)malloc(sizeof(bool));
