@@ -65,8 +65,6 @@ signals:
 
 
 public slots:
-    //Lock the pwd line edit  when needed (no encryption)
-    void lockPass();
     //Send all the connection info
     void sendConfig();
     //Write messages from the wifi thread on the status bar

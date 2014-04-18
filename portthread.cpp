@@ -24,22 +24,20 @@ void PortThread::run()
         QThread::msleep(500);
         serialPortInfoList=QSerialPortInfo::availablePorts();
         //We update only when there is change or if it's the first time
-        if (length!=serialPortInfoList.length() || i==0)
+        //We check in each port info if the manufacter is us
+        foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
         {
-            //We check in each port info if the manufacter is us
-            foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList)
+            if (serialPortInfo.manufacturer()=="www.airboxlab.com" || serialPortInfo.manufacturer()=="getalima.com" || serialPortInfo.manufacturer()=="http://getalima.com/" || serialPortInfo.manufacturer()=="http://www.airboxlab.com/" )
             {
-                if (serialPortInfo.manufacturer()=="www.airboxlab.com" || serialPortInfo.manufacturer()=="getalima.com" || serialPortInfo.manufacturer()=="http://getalima.com/" || serialPortInfo.manufacturer()=="http://www.airboxlab.com/" )
-                {
-                    b=true;
-                    name=*(new QString(serialPortInfo.portName()));
-                }
-
+                b=true;
+                name=*(new QString(serialPortInfo.portName()));
             }
-            //We emit to the main thread the information
-            emit isPlugged(b);
-            emit updateName(name);
+
         }
+        //We emit to the main thread the information
+        emit isPlugged(b);
+        emit updateName(name);
+
         //We update the length of the port list
         length=serialPortInfoList.length();
         //Not the first iteration anymore

@@ -172,7 +172,11 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
-            <widget class="QLineEdit" name="ssid"/>
+            <widget class="QLineEdit" name="ssid">
+             <property name="maxLength">
+              <number>31</number>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QGroupBox" name="encryption">

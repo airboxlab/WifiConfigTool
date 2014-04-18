@@ -8,7 +8,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 {
     ui->setupUi(this);
-
     //Setting up the thread
     t1=new PortThread();
     t1->start();
@@ -24,9 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     contextChanged(true);
     //Not sending
     sending=false;
-
     encryptlist=new QStringList();
-
     //All the connection
     connect(ui->update,SIGNAL(clicked()),this,SLOT(sendConfig()));
     connect(this,SIGNAL(SendMessage(QString,QByteArray,QByteArray,QByteArray)),t2,SLOT(SendConf(QString,QByteArray,QByteArray,QByteArray)));
@@ -37,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(t3,SIGNAL(updateList(QStringList*,QStringList*)),this,SLOT(updateSSIDList(QStringList*,QStringList*)));
     connect(ui->detect,SIGNAL(toggled(bool)),this,SLOT(contextChanged(bool)));
     connect(t3,SIGNAL(emptyList(bool)),this,SLOT(emptyList(bool)));
+
+
 }
 
 //Change the contect automatically if no wifi found (true-> change to manual)
@@ -77,33 +76,6 @@ void MainWindow::contextChanged(bool n)
     ui->comboBox->setVisible(n);
     ui->encryption->setVisible(!n);
     ui->ssid->setVisible(!n);
-}
-
- //Lock the pwd line edit  when needed (no encryption)
-void MainWindow::lockPass()
-{
-    //Disable depending on the mode
-    if (*manualMode)
-    {
-        if (ui->None->isChecked())
-        {
-            ui->pwd->clear();
-            ui->pwd->setDisabled(true);       
-        }
-        else ui->pwd->setDisabled(false);
-    }
-    else if (encryptlist->length()!=0)
-    {
-        if (getIndex(ui->comboBox->currentIndex())=="0")
-        {
-            ui->pwd->setDisabled(false);
-        }
-        else
-        {
-            ui->pwd->clear();
-            ui->pwd->setDisabled(true);
-        }
-    }
 }
 
 //Update the SSID List found by the wifi thread
@@ -274,6 +246,7 @@ void MainWindow::lockui(bool b)
         if (ui->None->isChecked() || sending || !connected)
         {
             ui->pwd->setDisabled(true);
+            ui->pwd->clear();
         }
         else
         {
@@ -288,9 +261,11 @@ void MainWindow::lockui(bool b)
     else if (encryptlist->length()!=0)
     {
         //Get the encryption mode for the selected SSID
+       qDebug() << ui->comboBox->currentIndex();
         if (getIndex(ui->comboBox->currentIndex())=="0" || sending || !connected)
         {
             ui->pwd->setDisabled(true);
+            ui->pwd->clear();
         }
         else
         {
