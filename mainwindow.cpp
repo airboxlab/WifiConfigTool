@@ -246,7 +246,10 @@ void MainWindow::lockui(bool b)
         if (ui->None->isChecked() || sending || !connected)
         {
             ui->pwd->setDisabled(true);
-            ui->pwd->clear();
+            if (ui->None->isChecked())
+            {
+                ui->pwd->clear();
+            }
         }
         else
         {
@@ -265,7 +268,10 @@ void MainWindow::lockui(bool b)
         if (getIndex(ui->comboBox->currentIndex())=="0" || sending || !connected)
         {
             ui->pwd->setDisabled(true);
-            ui->pwd->clear();
+            if (getIndex(ui->comboBox->currentIndex())=="0")
+            {
+                ui->pwd->clear();
+            }
         }
         else
         {
