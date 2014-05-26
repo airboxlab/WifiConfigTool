@@ -32,6 +32,13 @@ void ThreadSend::SendConf(QString portName,QByteArray ssid,QByteArray pwd, QByte
         }
         else
         {
+            qDebug() << (encryption.at(0)==1);
+            if (encryption.at(0)=='1' && (pwd.length()==10 || pwd.length()==26))
+            {
+                pwd=QByteArray::fromHex(pwd);
+            }
+            qDebug() << encryption.at(0);
+            qDebug() << "pwd ="+ pwd;
             //If we're in config mode, we send the informations
             emit write(3);
             serial->write(ssid);
