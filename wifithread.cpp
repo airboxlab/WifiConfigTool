@@ -72,6 +72,8 @@ void WifiThread::run()
         //We read and split in a QStringList containing each line
         *str=QString(sh.readAllStandardOutput());
         *str1=str->split(QRegExp("\n\|\r\n\|\r"));
+        int i=0;
+        int j=sizeof(int);
         //We extract the SSID and encryption mode
         foreach (QString q,*str1)
         {
@@ -82,29 +84,30 @@ void WifiThread::run()
                 temp=q.split(":").at(1);
                 temp=temp.mid(1,temp.length());
                 ListWifi->append(temp);
+                j=i;
             }
-            if ((q.contains("Authentification")))
+            if (q.contains("WPA2"))
             {
-                temp=q.split(":").at(1);
-                temp=temp.mid(1,4);
-                if (temp=="WPA2")
-                {
-                    temp="WPA2";
-                }
-                else if (temp=="WPA-")
-                {
-                    temp="WPA";
-                }
-                else if (temp=="WEP ")
-                {
-                    temp="WEP";
-                }
-                else //For english
-                {
-                    temp="None";
-                }
+                temp="WPA2";
                 ListEncryption->append(temp);
             }
+            else if (q.contains("WPA"))
+            {
+                temp="WPA";
+                ListEncryption->append(temp);
+            }
+            else if (q.contains("WEP"))
+            {
+                temp="WEP";
+                ListEncryption->append(temp);
+            }
+            else if (i==j+2)
+            {
+                temp="None";
+                ListEncryption->append(temp);
+            }
+            i++;
+            //else temp="None";
 
         }
 #endif

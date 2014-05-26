@@ -44,7 +44,10 @@ void MainWindow::emptyList(bool b)
 
     if (b)
     {
-        contextChanged(!b);
+        if (!(*manualMode==b))
+        {
+            contextChanged(!b);
+        }
         ui->detect->setText("Detect WiFi signal (No signal found)");
         ui->detect->setChecked(false);
         ui->detect->setCheckable(false);
@@ -62,6 +65,7 @@ void MainWindow::emptyList(bool b)
 //Called if the context changed (manual-automatic)
 void MainWindow::contextChanged(bool n)
 {
+    int changed=0;
     qDebug() << n;
     qDebug() << "manual" << *manualMode;
     if (!n)
@@ -236,6 +240,7 @@ void MainWindow::connectedAirbox(bool b)
 
 
 //Lock the UI when needed (sending, no airboxlab)
+
 void MainWindow::lockui(bool b)
 {
     qDebug() << "lockUi" << *manualMode;
@@ -326,7 +331,6 @@ bool MainWindow::checkData()
         return false;
     }
     else return true;
-
 }
 
 
@@ -379,6 +383,9 @@ QString MainWindow::getIndex(int nssid)
     QString i="0";
     QString encrypt;
     qDebug() << "getIndex" << *manualMode;
+    qDebug() << ui->comboBox->currentIndex();
+    qDebug() << ui->comboBox->count();
+    qDebug() << encryptlist->length();
     if (*manualMode)
     {
         if (ui->None->isChecked())
